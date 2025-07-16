@@ -6,7 +6,8 @@ from langchain_groq import ChatGroq
 from utils.config_loader import load_config
 load_dotenv()
 
-class ConfigLoader():
+
+class ConfigLoader:
     
     def __init__(self):
         print('loading config file')
@@ -16,29 +17,34 @@ class ConfigLoader():
         return self.config[key]
 
 class ModelLoader(BaseModel):
-    
-    model_provider:Literal['groq','openai'] = 'groq'
-    config: Optional[ConfigLoader]=Field(default=None,exclude=True)
+    try:
+        
+        model_provider:Literal['groq','openai'] = 'groq'
+        config: Optional[ConfigLoader]=Field(default=None,exclude=True)
 
-    def model_post_init(self, __context:Any):
-        self.config=ConfigLoader()
+        def model_post_init(self, __context:Any):
+            self.config=ConfigLoader()  
 
-    class Config:
-        arbitrary_types_allowed = True
+        class Config:
+            arbitrary_types_allowed = True
 
-    def load_llm(self):
-        """
-        Load and return the model
-        """
-        print('LLM loading')
+        def load_llm(self):
+            """
+            Load and return the model
+            """
+            print('LLM loading')
 
-        if self.model_provider == "groq":
-            print('--------loading LLM---------')
-            groq_api_key=os.getenv("GROQ_API_KEY")
-            model_name=self.config["llm"]["groq"]["model_name"]
-            llm=ChatGroq(model=model_name,api_key=groq_api_key)
-
-        return llm
+            if self.model_provider == "groq":
+                print('--------loading LLM---------')
+                groq_key=os.environ.get('GROQ_API_KEY')
+                print(f'groq key={groq_key}')
+                model_name = self.config["llm"]["groq"]["model_name"]
+                print(f'model name= {model_name}')
+                llm=ChatGroq(model=model_name,api_key=groq_key)
+                print(f'testing LLM--> {llm.invoke(input='hi').content}')
+            return llm
+    except Exception as e:
+        print('error in model_loader=',e)
 
 
         
